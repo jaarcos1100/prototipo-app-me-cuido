@@ -1,0 +1,1605 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>ME CUIDO - App de Salud</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: white;
+            -webkit-font-smoothing: antialiased;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            overscroll-behavior: none;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #f5f5f5;
+        }
+
+        /* ===== DESKTOP VIEW ===== */
+        @media (min-width: 768px) {
+            body {
+                padding: 20px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            }
+
+            .app-container {
+                width: 390px;
+                height: 844px;
+                border-radius: 40px;
+                border: 12px solid #000;
+                box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
+                overflow: hidden;
+            }
+
+            .notch {
+                position: absolute;
+                top: 0;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 150px;
+                height: 28px;
+                background: #000;
+                border-radius: 0 0 20px 20px;
+                z-index: 100;
+            }
+        }
+
+        /* ===== MOBILE VIEW ===== */
+        @media (max-width: 767px) {
+            body {
+                padding: 0;
+                background: white;
+            }
+
+            .app-container {
+                width: 100%;
+                height: 100vh;
+                border-radius: 0;
+                border: none;
+                box-shadow: none;
+            }
+
+            .notch {
+                display: none;
+            }
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            background: white;
+            position: relative;
+        }
+
+        .status-bar {
+            height: 44px;
+            padding: 8px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            color: #333;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            flex-shrink: 0;
+        }
+
+        .screen {
+            flex: 1;
+            overflow-y: auto;
+            display: none;
+            flex-direction: column;
+            background: white;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            background: linear-gradient(135deg, #0E5A6B 0%, #0D4A57 100%);
+            color: white;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 18px;
+            font-weight: 600;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(14, 90, 107, 0.15);
+        }
+
+        .header-danger {
+            background: linear-gradient(135deg, #4BA79F 0%, #3D9089 100%);
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            transition: transform 0.2s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .back-btn:active {
+            transform: scale(0.9);
+        }
+
+        /* ===== WELCOME SCREEN ===== */
+        .welcome-screen {
+            background: linear-gradient(135deg, #E8F5F3 0%, #F5F9F8 100%);
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .app-title {
+            font-size: 36px;
+            font-weight: 800;
+            color: #0E5A6B;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .app-subtitle {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 50px;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+
+        .btn {
+            width: 100%;
+            max-width: 358px;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .btn:active:not(:disabled) {
+            transform: translateY(2px);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0E5A6B 0%, #0D4A57 100%);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #4BA79F 0%, #3D9089 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #0E5A6B;
+            border: 2px solid #0E5A6B;
+        }
+
+        /* ===== FORM STYLES ===== */
+        .form-content {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0E5A6B;
+            display: block;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            background: white;
+            transition: all 0.3s;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #0E5A6B;
+            box-shadow: 0 0 0 3px rgba(0, 45, 122, 0.1);
+        }
+
+        .form-input.error, .form-select.error {
+            border-color: #d32f2f;
+            background: #ffebee;
+        }
+
+        .form-input.success, .form-select.success {
+            border-color: #00897b;
+            background: #e0f2f1;
+        }
+
+        .error-message {
+            color: #d32f2f;
+            font-size: 12px;
+            margin-top: 6px;
+            display: none;
+            font-weight: 600;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .success-message {
+            color: #00897b;
+            font-size: 12px;
+            margin-top: 6px;
+            display: none;
+            font-weight: 600;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .radio-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid #f0f0f0;
+            transition: all 0.2s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .radio-item:active {
+            background: #f5f5f5;
+            border-color: #e0e0e0;
+        }
+
+        .radio-item input[type="radio"] {
+            cursor: pointer;
+            width: 20px;
+            height: 20px;
+        }
+
+        /* ===== HOME SCREEN ===== */
+        .cards-container {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow-y: auto;
+            flex: 1;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .card {
+            padding: 16px 20px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .card:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-risk {
+            background: linear-gradient(135deg, #4BA79F 0%, #3D9089 100%);
+        }
+
+        .card-emergency {
+            background: linear-gradient(135deg, #0E5A6B 0%, #0D4A57 100%);
+        }
+
+        .card-info {
+            background: linear-gradient(135deg, #0E5A6B 0%, #0D4A57 100%);
+        }
+
+        .card-location {
+            background: linear-gradient(135deg, #4BA79F 0%, #3D9089 100%);
+        }
+
+        .card-support {
+            background: linear-gradient(135deg, #4BA79F 0%, #3D9089 100%);
+        }
+
+        /* ===== CONTENT ===== */
+        .content {
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .question-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #0E5A6B;
+            margin-bottom: 18px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ===== ALERT STYLES ===== */
+        .alert-content {
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .alert-banner {
+            background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+            color: white;
+            padding: 18px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 14px;
+            box-shadow: 0 4px 12px rgba(211, 47, 47, 0.2);
+        }
+
+        .alert-icon {
+            font-size: 28px;
+            flex-shrink: 0;
+        }
+
+        .alert-text {
+            flex: 1;
+        }
+
+        .alert-title {
+            font-weight: 700;
+            margin-bottom: 4px;
+            font-size: 15px;
+        }
+
+        .alert-description {
+            font-size: 13px;
+            line-height: 1.5;
+            opacity: 0.95;
+        }
+
+        .action-buttons {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .illustration {
+            text-align: center;
+            padding: 30px 0;
+            font-size: 64px;
+        }
+
+        .spacer {
+            height: 100px;
+        }
+
+        /* ===== LOADING & MODAL ===== */
+        .loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(2px);
+        }
+
+        .loading.show {
+            display: flex;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            backdrop-filter: blur(4px);
+            padding: 20px;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 28px;
+            border-radius: 16px;
+            max-width: 300px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease;
+            width: 100%;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0E5A6B;
+            margin-bottom: 12px;
+        }
+
+        .modal-text {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 11px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .modal-btn-confirm {
+            background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+            color: white;
+        }
+
+        .modal-btn-cancel {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .modal-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* ===== PROGRESS ===== */
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #e0e0e0;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #0E5A6B 0%, #0D4A57 100%);
+            transition: width 0.3s;
+        }
+
+        /* ===== INFO TOOLTIP ===== */
+        .info-tooltip {
+            font-size: 12px;
+            color: #666;
+            margin-top: 6px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-left: 3px solid #0E5A6B;
+            border-radius: 4px;
+            display: none;
+            font-weight: 500;
+        }
+
+        .info-tooltip.show {
+            display: block;
+        }
+
+        /* ===== INFO SCREEN ===== */
+        .info-card {
+            background: white;
+            border-left: 4px solid #4BA79F;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .info-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #0E5A6B;
+            margin-bottom: 10px;
+        }
+
+        .info-text {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .info-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .info-list li {
+            font-size: 14px;
+            color: #666;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .info-list li:last-child {
+            border-bottom: none;
+        }
+
+        .info-list li:before {
+            content: "✓ ";
+            color: #4BA79F;
+            font-weight: 700;
+            margin-right: 8px;
+        }
+
+        /* ===== LOCATIONS SCREEN ===== */
+        .location-card {
+            background: linear-gradient(135deg, rgba(75, 167, 159, 0.1) 0%, rgba(14, 90, 107, 0.1) 100%);
+            border: 1px solid #4BA79F;
+            padding: 16px;
+            border-radius: 10px;
+            margin-bottom: 16px;
+        }
+
+        .location-header {
+            font-size: 16px;
+            font-weight: 700;
+            color: #0E5A6B;
+            margin-bottom: 12px;
+        }
+
+        .location-text {
+            font-size: 13px;
+            color: #666;
+            margin: 6px 0;
+            line-height: 1.5;
+        }
+
+        /* ===== SUPPORT SCREEN ===== */
+        .support-section {
+            background: white;
+            padding: 16px;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            border-left: 4px solid #0E5A6B;
+        }
+
+        .support-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #0E5A6B;
+            margin-bottom: 12px;
+        }
+
+        .support-text {
+            font-size: 14px;
+            color: #666;
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        .support-card {
+            display: flex;
+            gap: 12px;
+            background: white;
+            padding: 16px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            border: 1px solid #e0e0e0;
+            align-items: flex-start;
+        }
+
+        .support-icon {
+            font-size: 32px;
+            flex-shrink: 0;
+        }
+
+        .support-info {
+            flex: 1;
+        }
+
+        .support-card-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #0E5A6B;
+            margin-bottom: 4px;
+        }
+
+        .support-card-text {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .btn-mini {
+            background: #4BA79F;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .btn-mini:active {
+            transform: scale(0.95);
+            opacity: 0.9;
+        }
+
+        .resource-item {
+            background: #f5f5f5;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 3px solid #4BA79F;
+            font-size: 13px;
+        }
+
+        /* ===== SCROLLBAR ===== */
+        .screen::-webkit-scrollbar,
+        .form-content::-webkit-scrollbar,
+        .content::-webkit-scrollbar,
+        .cards-container::-webkit-scrollbar,
+        .alert-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .screen::-webkit-scrollbar-track,
+        .form-content::-webkit-scrollbar-track,
+        .content::-webkit-scrollbar-track,
+        .cards-container::-webkit-scrollbar-track,
+        .alert-content::-webkit-scrollbar-track {
+            background: #f0f0f0;
+            border-radius: 3px;
+        }
+
+        .screen::-webkit-scrollbar-thumb,
+        .form-content::-webkit-scrollbar-thumb,
+        .content::-webkit-scrollbar-thumb,
+        .cards-container::-webkit-scrollbar-thumb,
+        .alert-content::-webkit-scrollbar-thumb {
+            background: #d0d0d0;
+            border-radius: 3px;
+        }
+
+        .screen::-webkit-scrollbar-thumb:hover,
+        .form-content::-webkit-scrollbar-thumb:hover,
+        .content::-webkit-scrollbar-thumb:hover,
+        .cards-container::-webkit-scrollbar-thumb:hover,
+        .alert-content::-webkit-scrollbar-thumb:hover {
+            background: #b0b0b0;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="notch"></div>
+        <div class="status-bar">
+            <span>10:44</span>
+            <span>📶 📡 🔋</span>
+        </div>
+
+        <!-- PANTALLA 1: BIENVENIDA -->
+        <div class="screen welcome-screen active" id="screen-welcome">
+            <div class="logo">❤️</div>
+            <h1 class="app-title">ME CUIDO</h1>
+            <p class="app-subtitle">Tu orientación confidencial<br>frente al riesgo de VIH</p>
+            <button class="btn btn-primary" onclick="goToScreen('screen-login')">Iniciar Sesión</button>
+            <button class="btn btn-danger" onclick="goToScreen('screen-register')">Registrarse</button>
+            <button class="btn btn-secondary" onclick="goToScreen('screen-home')">Acceso Rápido</button>
+        </div>
+
+        <!-- PANTALLA 2: LOGIN -->
+        <div class="screen" id="screen-login">
+            <div class="header">
+                <button class="back-btn" onclick="goToScreen('screen-welcome')">←</button>
+                <div>Iniciar Sesión</div>
+                <div style="width: 24px;"></div>
+            </div>
+            <div class="form-content">
+                <div class="form-group">
+                    <label class="form-label">📧 Email</label>
+                    <input type="email" class="form-input" id="loginEmail" placeholder="tu@email.com" onblur="validateEmail(this)">
+                    <div class="error-message" id="loginEmailError">✗ Email inválido</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">🔐 Contraseña</label>
+                    <input type="password" class="form-input" id="loginPassword" placeholder="••••••••" onblur="validatePassword(this)">
+                    <div class="error-message" id="loginPasswordError">✗ Mínimo 6 caracteres</div>
+                    <div class="info-tooltip" id="passwordTip">💡 Mínimo 6 caracteres</div>
+                </div>
+
+                <div class="spacer"></div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="submitLogin()">Ingresar</button>
+                <button class="btn btn-secondary" onclick="goToScreen('screen-register')">¿Sin cuenta? Regístrate</button>
+            </div>
+        </div>
+
+        <!-- PANTALLA 3: REGISTRO -->
+        <div class="screen" id="screen-register">
+            <div class="header">
+                <button class="back-btn" onclick="goToScreen('screen-welcome')">←</button>
+                <div>Registrarse</div>
+                <div style="width: 24px;"></div>
+            </div>
+            <div class="form-content">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 33%"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">📧 Email</label>
+                    <input type="email" class="form-input" id="regEmail" placeholder="tu@email.com" onblur="validateEmail(this)">
+                    <div class="error-message" id="regEmailError">✗ Email inválido</div>
+                    <div class="success-message" id="regEmailSuccess">✓ Email válido</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">🔐 Contraseña</label>
+                    <input type="password" class="form-input" id="regPassword" placeholder="••••••••" onblur="validatePassword(this)" oninput="checkPasswordStrength()">
+                    <div class="error-message" id="regPasswordError">✗ Mínimo 6 caracteres</div>
+                    <div class="info-tooltip" id="regPasswordTip">💡 Mínimo 6 caracteres</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">🔒 Confirmar Contraseña</label>
+                    <input type="password" class="form-input" id="regPasswordConfirm" placeholder="••••••••" onblur="validatePasswordMatch()">
+                    <div class="error-message" id="regPasswordConfirmError">✗ Las contraseñas no coinciden</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">🎂 Edad</label>
+                    <input type="number" class="form-input" id="regAge" placeholder="ej: 25" min="13" max="120" onblur="validateAge(this)">
+                    <div class="error-message" id="regAgeError">✗ Mínimo 13 años</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">👤 Identidad de Género</label>
+                    <select class="form-select" id="regGender" onchange="validateGender(this)">
+                        <option value="">Selecciona una opción...</option>
+                        <option value="m">Masculino</option>
+                        <option value="f">Femenino</option>
+                        <option value="nb">No binario</option>
+                        <option value="other">Otro</option>
+                    </select>
+                    <div class="error-message" id="regGenderError">✗ Por favor selecciona</div>
+                </div>
+
+                <div class="spacer"></div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="submitRegister()">Crear Cuenta</button>
+            </div>
+        </div>
+
+        <!-- PANTALLA 4: INICIO (HOME) -->
+        <div class="screen" id="screen-home">
+            <div class="header header-danger">
+                <button class="back-btn">☰</button>
+                <div>❤️ Inicio</div>
+                <button class="back-btn" onclick="logout()">⬅️</button>
+            </div>
+            <div class="cards-container">
+                <div class="card card-risk" onclick="goToScreen('screen-autotest')">
+                    <span>🧪 Autotest de Riesgo</span>
+                    <span>→</span>
+                </div>
+                <div class="card card-emergency" onclick="showEmergencyModal()">
+                    <span>⚠️ Emergencia</span>
+                    <span>→</span>
+                </div>
+                <div class="card card-info" onclick="goToScreen('screen-info')">
+                    <span>ℹ️ Info sobre el VIH</span>
+                    <span>→</span>
+                </div>
+                <div class="card card-location" onclick="goToScreen('screen-locations')">
+                    <span>📍 Dónde Acudir</span>
+                    <span>→</span>
+                </div>
+                <div class="card card-support" onclick="goToScreen('screen-support')">
+                    <span>💬 Consejería y Apoyo</span>
+                    <span>→</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANTALLA 5: AUTOTEST -->
+        <div class="screen" id="screen-autotest">
+            <div class="header">
+                <button class="back-btn" onclick="goToScreen('screen-home')">←</button>
+                <div>Autotest de Riesgo</div>
+                <div style="width: 24px;"></div>
+            </div>
+            <div class="content">
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 50%"></div>
+                </div>
+
+                <div class="question-title">Pregunta 1: Tipo de Contacto</div>
+                <div class="radio-group">
+                    <label class="radio-item">
+                        <input type="radio" name="contact" value="sex" id="contactSex" required>
+                        <span>Sexo sin protección</span>
+                    </label>
+                    <label class="radio-item">
+                        <input type="radio" name="contact" value="blood" id="contactBlood" required>
+                        <span>Contacto con Sangre</span>
+                    </label>
+                    <label class="radio-item">
+                        <input type="radio" name="contact" value="object" id="contactObject" required>
+                        <span>Objeto Cortopunzante</span>
+                    </label>
+                </div>
+
+                <div style="margin-top: 30px;" class="question-title">Pregunta 2: Tiempo Transcurrido</div>
+                <div class="radio-group">
+                    <label class="radio-item">
+                        <input type="radio" name="time" value="24h" id="time24" required>
+                        <span>Menos de 24 horas</span>
+                    </label>
+                    <label class="radio-item">
+                        <input type="radio" name="time" value="48h" id="time48" required>
+                        <span>24-48 horas</span>
+                    </label>
+                    <label class="radio-item">
+                        <input type="radio" name="time" value="72h" id="time72" required>
+                        <span>Más de 72 horas</span>
+                    </label>
+                </div>
+
+                <div class="spacer"></div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="submitAutotest()">Ver Resultado</button>
+            </div>
+        </div>
+
+        <!-- PANTALLA 6: RESULTADO -->
+        <div class="screen" id="screen-alert">
+            <div class="header">
+                <button class="back-btn" onclick="goToScreen('screen-home')">←</button>
+                <div>ME CUIDO</div>
+                <div style="width: 24px;"></div>
+            </div>
+            <div class="alert-content">
+                <div class="alert-banner" id="alertBanner">
+                    <div class="alert-icon">⚠️</div>
+                    <div class="alert-text">
+                        <div class="alert-title" id="alertTitle">¡Riesgo Alto Detectado!</div>
+                        <div class="alert-description" id="alertDesc">Te encuentras en una ventana crítica.</div>
+                    </div>
+                </div>
+
+                <div style="background: #fff3e0; padding: 14px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #f57c00;" id="warningBox">
+                    <p style="font-size: 13px; color: #e65100; line-height: 1.6; font-weight: 600;">
+                        <span id="warningTitle">⏰ Debes acudir a urgencias para PEP.</span><br>
+                        <span style="font-weight: 500; opacity: 0.9;" id="warningTime">Queda 24 horas para actuar.</span>
+                    </p>
+                </div>
+
+                <div class="illustration">👥</div>
+
+                <div style="height: 20px;"></div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-primary" style="background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);">🏥 Buscar Centro Médico</button>
+                <button class="btn btn-danger" onclick="showConfirmCall()">📞 Llamar a Urgencias</button>
+            </div>
+        </div>
+
+        <!-- PANTALLA 7: INFO SOBRE EL VIH -->
+        <div class="screen" id="screen-info">
+            <div class="header">
+                <button class="back-btn" onclick="goToScreen('screen-home')">←</button>
+                <div>ℹ️ Sobre el VIH</div>
+                <div style="width: 24px;"></div>
+            </div>
+            <div class="content">
+                <div class="info-card">
+                    <div class="info-title">¿Qué es el VIH?</div>
+                    <p class="info-text">El VIH es un virus que afecta el sistema inmunológico. Se transmite por contacto sexual sin protección, sangre infectada u otros fluidos corporales.</p>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-title">📋 Síntomas Iniciales</div>
+                    <ul class="info-list">
+                        <li>Fiebre</li>
+                        <li>Fatiga y cansancio</li>
+                        <li>Dolor de cabeza</li>
+                        <li>Erupción cutánea</li>
+                        <li>Inflamación de ganglios</li>
+                    </ul>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-title">✅ Prevención</div>
+                    <ul class="info-list">
+                        <li>Usar preservativo</li>
+                        <li>Pruebas regulares</li>
+                        <li>PrEP (si es necesario)</li>
+                        <li>Evitar compartir agujas</li>
+                    </ul>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-title">💊 Tratamiento</div>
+                    <p class="info-text">El VIH tiene tratamiento efectivo. Con medicamentos antirretrovirales, las personas con VIH pueden vivir vidas largas y saludables.</p>
+                </div>
+
+                <div class="spacer"></div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="goToScreen('screen-home')">Atrás</button>
+            </div>
+        </div>
+
+        <!-- PANTALLA 8: DÓNDE ACUDIR -->
+        <div class="screen" id="screen-locations">
+            <div class="header">
+                <button class="back-btn" onclick="goToScreen('screen-home')">←</button>
+                <div>📍 Centros Médicos</div>
+                <div style="width: 24px;"></div>
+            </div>
+            <div class="content">
+                <div class="location-card">
+                    <div class="location-header">🏥 Centro de Salud Principal</div>
+                    <p class="location-text"><strong>Dirección:</strong> Calle Principal 123</p>
+                    <p class="location-text"><strong>Teléfono:</strong> +1 234 567 8900</p>
+                    <p class="location-text"><strong>Horario:</strong> Lun-Vie 08:00 - 18:00</p>
+                    <p class="location-text"><strong>Servicios:</strong> Consulta, Pruebas, Tratamiento</p>
+                </div>
+
+                <div class="location-card">
+                    <div class="location-header">🏥 Clínica Especializada</div>
+                    <p class="location-text"><strong>Dirección:</strong> Avenida Segunda 456</p>
+                    <p class="location-text"><strong>Teléfono:</strong> +1 234 567 8901</p>
+                    <p class="location-text"><strong>Horario:</strong> Lun-Sáb 09:00 - 20:00</p>
+                    <p class="location-text"><strong>Servicios:</strong> Consulta especializada, Consejería</p>
+                </div>
+
+                <div class="location-card">
+                    <div class="location-header">🚑 Emergencias 24/7</div>
+                    <p class="location-text"><strong>Dirección:</strong> Calle Urgencias 789</p>
+                    <p class="location-text"><strong>Teléfono:</strong> +1 234 567 8902</p>
+                    <p class="location-text"><strong>Horario:</strong> Abierto 24 horas</p>
+                    <p class="location-text"><strong>Servicios:</strong> Emergencias, PEP</p>
+                </div>
+
+                <div class="spacer"></div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="alert('🗺️ Abriendo GPS...')">📍 Ver en Mapa</button>
+                <button class="btn btn-secondary" onclick="goToScreen('screen-home')">Atrás</button>
+            </div>
+        </div>
+
+        <!-- PANTALLA 9: CONSEJERÍA Y APOYO -->
+        <div class="screen" id="screen-support">
+            <div class="header">
+                <button class="back-btn" onclick="goToScreen('screen-home')">←</button>
+                <div>💬 Apoyo</div>
+                <div style="width: 24px;"></div>
+            </div>
+            <div class="content">
+                <div class="support-section">
+                    <div class="support-title">🎯 ¿Necesitas ayuda?</div>
+                    <p class="support-text">Nuestros consejeros certificados están disponibles para apoyarte en tu camino hacia la salud.</p>
+                </div>
+
+                <div class="support-card">
+                    <div class="support-icon">💬</div>
+                    <div class="support-info">
+                        <div class="support-card-title">Chat en Vivo</div>
+                        <p class="support-card-text">Habla con un consejero ahora</p>
+                        <button class="btn-mini" onclick="alert('💬 Conectando con consejero...')">Iniciar Chat</button>
+                    </div>
+                </div>
+
+                <div class="support-card">
+                    <div class="support-icon">📞</div>
+                    <div class="support-info">
+                        <div class="support-card-title">Llamada Telefónica</div>
+                        <p class="support-card-text">Habla confidencialmente por teléfono</p>
+                        <button class="btn-mini" onclick="alert('📞 Abriendo teléfono...')">Llamar Ahora</button>
+                    </div>
+                </div>
+
+                <div class="support-card">
+                    <div class="support-icon">📧</div>
+                    <div class="support-info">
+                        <div class="support-card-title">Email</div>
+                        <p class="support-card-text">Escribe tus preguntas y dudas</p>
+                        <button class="btn-mini" onclick="alert('📧 Abriendo email...')">Enviar Email</button>
+                    </div>
+                </div>
+
+                <div class="support-section">
+                    <div class="support-title">📚 Recursos Útiles</div>
+                    <div class="resource-item">
+                        <strong>✓ Guía de Prevención</strong><br>
+                        <span style="font-size: 12px; color: #666;">Información sobre métodos de prevención</span>
+                    </div>
+                    <div class="resource-item">
+                        <strong>✓ Testimonios de Apoyo</strong><br>
+                        <span style="font-size: 12px; color: #666;">Historias de personas que superaron el riesgo</span>
+                    </div>
+                    <div class="resource-item">
+                        <strong>✓ Comunidad Online</strong><br>
+                        <span style="font-size: 12px; color: #666;">Únete a grupos de apoyo anónimos</span>
+                    </div>
+                </div>
+
+                <div class="spacer"></div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="goToScreen('screen-home')">Atrás</button>
+            </div>
+        </div>
+
+        <!-- LOADING -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+        </div>
+
+        <!-- MODAL -->
+        <div class="modal" id="modal">
+            <div class="modal-content">
+                <div class="modal-title" id="modalTitle">Confirmar</div>
+                <div class="modal-text" id="modalText">¿Estás seguro?</div>
+                <div class="modal-buttons">
+                    <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancelar</button>
+                    <button class="modal-btn modal-btn-confirm" id="modalConfirmBtn" onclick="modalConfirm()">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Evitar zoom en doble tap
+        document.addEventListener('touchend', function(event) {
+            if (event.changedTouches.length == 1 && Date.now() - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = Date.now();
+        }, false);
+        let lastTouchEnd = 0;
+
+        // Estado global
+        let appState = {
+            user: null,
+            formData: {},
+            modalCallback: null
+        };
+
+        // Navegación
+        function goToScreen(screenId) {
+            const screens = document.querySelectorAll('.screen');
+            screens.forEach(screen => screen.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        // VALIDACIONES
+        function validateEmail(input) {
+            const email = input.value.trim();
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const isValid = emailRegex.test(email);
+            
+            const errorId = input.id + 'Error';
+            const successId = input.id + 'Success';
+            const errorEl = document.getElementById(errorId);
+            const successEl = document.getElementById(successId);
+
+            if (email === '') {
+                if (errorEl) errorEl.classList.remove('show');
+                if (successEl) successEl.classList.remove('show');
+                input.classList.remove('error', 'success');
+            } else if (isValid) {
+                input.classList.remove('error');
+                input.classList.add('success');
+                if (errorEl) errorEl.classList.remove('show');
+                if (successEl) successEl.classList.add('show');
+            } else {
+                input.classList.add('error');
+                input.classList.remove('success');
+                if (errorEl) errorEl.classList.add('show');
+                if (successEl) successEl.classList.remove('show');
+            }
+        }
+
+        function validatePassword(input) {
+            const password = input.value;
+            const isValid = password.length >= 6;
+            const errorId = input.id + 'Error';
+            const errorEl = document.getElementById(errorId);
+
+            if (isValid) {
+                input.classList.remove('error');
+                if (errorEl) errorEl.classList.remove('show');
+            } else if (password === '') {
+                input.classList.remove('error');
+                if (errorEl) errorEl.classList.remove('show');
+            } else {
+                input.classList.add('error');
+                if (errorEl) errorEl.classList.add('show');
+            }
+        }
+
+        function validatePasswordMatch() {
+            const password = document.getElementById('regPassword').value;
+            const confirm = document.getElementById('regPasswordConfirm').value;
+            const errorEl = document.getElementById('regPasswordConfirmError');
+
+            if (confirm === '') {
+                document.getElementById('regPasswordConfirm').classList.remove('error');
+                errorEl.classList.remove('show');
+            } else if (password === confirm) {
+                document.getElementById('regPasswordConfirm').classList.remove('error');
+                errorEl.classList.remove('show');
+            } else {
+                document.getElementById('regPasswordConfirm').classList.add('error');
+                errorEl.classList.add('show');
+            }
+        }
+
+        function validateAge(input) {
+            const age = parseInt(input.value);
+            const isValid = age >= 13 && age <= 120;
+            const errorEl = document.getElementById('regAgeError');
+
+            if (input.value === '') {
+                input.classList.remove('error');
+                errorEl.classList.remove('show');
+            } else if (isValid) {
+                input.classList.remove('error');
+                errorEl.classList.remove('show');
+            } else {
+                input.classList.add('error');
+                errorEl.classList.add('show');
+            }
+        }
+
+        function validateGender(input) {
+            const errorEl = document.getElementById('regGenderError');
+            if (input.value === '') {
+                input.classList.add('error');
+                errorEl.classList.add('show');
+            } else {
+                input.classList.remove('error');
+                errorEl.classList.remove('show');
+            }
+        }
+
+        function checkPasswordStrength() {
+            const password = document.getElementById('regPassword').value;
+            const tip = document.getElementById('regPasswordTip');
+            
+            if (password.length === 0) {
+                tip.classList.remove('show');
+            } else if (password.length < 6) {
+                tip.textContent = `💡 ${password.length}/6 caracteres mínimo`;
+                tip.classList.add('show');
+            } else if (!/\d/.test(password)) {
+                tip.textContent = '💡 Agrega números para mayor seguridad';
+                tip.classList.add('show');
+            } else {
+                tip.textContent = '✓ Contraseña segura';
+                tip.classList.add('show');
+            }
+        }
+
+        // SUBMIT FUNCIONES
+        function submitLogin() {
+            const emailInput = document.getElementById('loginEmail');
+            const passwordInput = document.getElementById('loginPassword');
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+            const emailError = document.getElementById('loginEmailError');
+            const passwordError = document.getElementById('loginPasswordError');
+
+            let hasErrors = false;
+
+            // Validar email
+            if (!email) {
+                emailInput.classList.add('error');
+                emailError.textContent = '✗ El email es requerido';
+                emailError.classList.add('show');
+                hasErrors = true;
+            } else {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    emailInput.classList.add('error');
+                    emailError.textContent = '✗ Email inválido';
+                    emailError.classList.add('show');
+                    hasErrors = true;
+                } else {
+                    emailInput.classList.remove('error');
+                    emailError.classList.remove('show');
+                }
+            }
+
+            // Validar contraseña
+            if (!password) {
+                passwordInput.classList.add('error');
+                passwordError.textContent = '✗ La contraseña es requerida';
+                passwordError.classList.add('show');
+                hasErrors = true;
+            } else if (password.length < 6) {
+                passwordInput.classList.add('error');
+                passwordError.textContent = '✗ Mínimo 6 caracteres';
+                passwordError.classList.add('show');
+                hasErrors = true;
+            } else {
+                passwordInput.classList.remove('error');
+                passwordError.classList.remove('show');
+            }
+
+            if (hasErrors) {
+                return;
+            }
+
+            showLoading();
+            setTimeout(() => {
+                hideLoading();
+                appState.user = { email: email };
+                goToScreen('screen-home');
+                emailInput.value = '';
+                passwordInput.value = '';
+            }, 1500);
+        }
+
+        function submitRegister() {
+            const emailInput = document.getElementById('regEmail');
+            const passwordInput = document.getElementById('regPassword');
+            const passwordConfirmInput = document.getElementById('regPasswordConfirm');
+            const ageInput = document.getElementById('regAge');
+            const genderSelect = document.getElementById('regGender');
+
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+            const passwordConfirm = passwordConfirmInput.value;
+            const age = parseInt(ageInput.value);
+            const gender = genderSelect.value;
+
+            const emailError = document.getElementById('regEmailError');
+            const passwordError = document.getElementById('regPasswordError');
+            const passwordConfirmError = document.getElementById('regPasswordConfirmError');
+            const ageError = document.getElementById('regAgeError');
+            const genderError = document.getElementById('regGenderError');
+
+            let hasErrors = false;
+
+            // Validar email
+            if (!email) {
+                emailInput.classList.add('error');
+                emailError.textContent = '✗ El email es requerido';
+                emailError.classList.add('show');
+                hasErrors = true;
+            } else {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    emailInput.classList.add('error');
+                    emailError.textContent = '✗ Email inválido';
+                    emailError.classList.add('show');
+                    hasErrors = true;
+                } else {
+                    emailInput.classList.remove('error');
+                    emailError.classList.remove('show');
+                }
+            }
+
+            // Validar contraseña
+            if (!password) {
+                passwordInput.classList.add('error');
+                passwordError.textContent = '✗ La contraseña es requerida';
+                passwordError.classList.add('show');
+                hasErrors = true;
+            } else if (password.length < 6) {
+                passwordInput.classList.add('error');
+                passwordError.textContent = '✗ Mínimo 6 caracteres';
+                passwordError.classList.add('show');
+                hasErrors = true;
+            } else {
+                passwordInput.classList.remove('error');
+                passwordError.classList.remove('show');
+            }
+
+            // Validar confirmación de contraseña
+            if (!passwordConfirm) {
+                passwordConfirmInput.classList.add('error');
+                passwordConfirmError.textContent = '✗ Confirma tu contraseña';
+                passwordConfirmError.classList.add('show');
+                hasErrors = true;
+            } else if (password !== passwordConfirm) {
+                passwordConfirmInput.classList.add('error');
+                passwordConfirmError.textContent = '✗ Las contraseñas no coinciden';
+                passwordConfirmError.classList.add('show');
+                hasErrors = true;
+            } else {
+                passwordConfirmInput.classList.remove('error');
+                passwordConfirmError.classList.remove('show');
+            }
+
+            // Validar edad
+            if (!ageInput.value) {
+                ageInput.classList.add('error');
+                ageError.textContent = '✗ La edad es requerida';
+                ageError.classList.add('show');
+                hasErrors = true;
+            } else if (age < 13 || age > 120) {
+                ageInput.classList.add('error');
+                ageError.textContent = '✗ Debes tener entre 13 y 120 años';
+                ageError.classList.add('show');
+                hasErrors = true;
+            } else {
+                ageInput.classList.remove('error');
+                ageError.classList.remove('show');
+            }
+
+            // Validar género
+            if (!gender) {
+                genderSelect.classList.add('error');
+                genderError.textContent = '✗ Por favor selecciona una opción';
+                genderError.classList.add('show');
+                hasErrors = true;
+            } else {
+                genderSelect.classList.remove('error');
+                genderError.classList.remove('show');
+            }
+
+            if (hasErrors) {
+                return;
+            }
+
+            showLoading();
+            setTimeout(() => {
+                hideLoading();
+                appState.user = { email: email, age: age, gender: gender };
+                goToScreen('screen-home');
+                emailInput.value = '';
+                passwordInput.value = '';
+                passwordConfirmInput.value = '';
+                ageInput.value = '';
+                genderSelect.value = '';
+            }, 1500);
+        }
+
+        function submitAutotest() {
+            const contact = document.querySelector('input[name="contact"]:checked');
+            const time = document.querySelector('input[name="time"]:checked');
+
+            if (!contact || !time) {
+                alert('⚠️ Por favor responde todas las preguntas antes de continuar');
+                return;
+            }
+
+            appState.formData.contact = contact.value;
+            appState.formData.time = time.value;
+
+            let riskLevel = 'bajo';
+            if (contact.value === 'sex' && (time.value === '24h' || time.value === '48h')) {
+                riskLevel = 'alto';
+            } else if (contact.value === 'blood' || contact.value === 'object') {
+                riskLevel = 'medio';
+            }
+
+            const alertBanner = document.getElementById('alertBanner');
+            if (riskLevel === 'alto') {
+                alertBanner.style.background = 'linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%)';
+                document.getElementById('alertTitle').textContent = '¡Riesgo Alto Detectado!';
+                document.getElementById('alertDesc').textContent = 'Te encuentras en una ventana crítica.';
+                document.getElementById('warningTitle').textContent = '⏰ Debes acudir a urgencias para PEP.';
+                document.getElementById('warningTime').textContent = 'Queda 24 horas para actuar.';
+            } else if (riskLevel === 'medio') {
+                alertBanner.style.background = 'linear-gradient(135deg, #f57c00 0%, #e65100 100%)';
+                document.getElementById('alertTitle').textContent = '⚠️ Riesgo Moderado Detectado';
+                document.getElementById('alertDesc').textContent = 'Considera acudir a un profesional.';
+                document.getElementById('warningTitle').textContent = '📋 Se recomienda consulta médica.';
+                document.getElementById('warningTime').textContent = 'Puedes programar una cita.';
+            } else {
+                alertBanner.style.background = 'linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)';
+                document.getElementById('alertTitle').textContent = '✓ Riesgo Bajo';
+                document.getElementById('alertDesc').textContent = 'Aun así, es importante informarte.';
+                document.getElementById('warningTitle').textContent = '💡 Continúa informándote.';
+                document.getElementById('warningTime').textContent = 'Accede a nuestros recursos de educación.';
+            }
+
+            goToScreen('screen-alert');
+        }
+
+        // UI FUNCIONES
+        function showLoading() {
+            document.getElementById('loading').classList.add('show');
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').classList.remove('show');
+        }
+
+        function showModal(title, text, callback) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalText').textContent = text;
+            appState.modalCallback = callback;
+            document.getElementById('modal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('show');
+            appState.modalCallback = null;
+        }
+
+        function modalConfirm() {
+            if (appState.modalCallback) {
+                appState.modalCallback();
+            }
+            closeModal();
+        }
+
+        function showEmergencyModal() {
+            showModal(
+                '⚠️ EMERGENCIA',
+                '¿Necesitas ayuda inmediata? Esto activará el protocolo de emergencia.',
+                () => {
+                    goToScreen('screen-alert');
+                }
+            );
+        }
+
+        function showConfirmCall() {
+            showModal(
+                '📞 Llamar',
+                '¿Deseas llamar al número de emergencia?',
+                () => {
+                    alert('📞 Abriendo el teléfono...');
+                }
+            );
+        }
+
+        function logout() {
+            showModal(
+                '👋 Cerrar Sesión',
+                '¿Deseas cerrar sesión?',
+                () => {
+                    appState.user = null;
+                    goToScreen('screen-welcome');
+                }
+            );
+        }
+    </script>
+</body>
+</html>
